@@ -75,7 +75,9 @@ def train(args):
                                   config['valid_desc'], config['desc_len'])
     data_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=config['batch_size'], 
                                        shuffle=True, drop_last=True, num_workers=1)
-    
+    data_loader_valid = torch.utils.data.DataLoader(dataset=valid_set, batch_size=10000, 
+                                       shuffle=True, drop_last=True, num_workers=1)
+
     ###############################################################################
     # Define Model
     ###############################################################################
@@ -162,7 +164,7 @@ def train(args):
 
             if itr_global % args.valid_every == 0:
                 logger.info("validating..")                  
-                valid_result = validate(valid_set, model, 10000, 1, config['sim_measure'])  
+                valid_result = validate(data_loader_valid, model, 10000, 1, config['sim_measure'])  
                 logger.info(valid_result)
                 if tb_writer is not None:
                     for key, value in valid_result.items():
@@ -179,7 +181,7 @@ def train(args):
                     nsml.save(checkpoint=f'model_step{itr_global}')
 
 ##### Evaluation #####
-def validate(valid_set, model, pool_size, K, sim_measure):
+def validate(data_loader, model, pool_size, K, sim_measure):
     """
     simple validation in a code pool. 
     @param: poolsize - size of the code pool, if -1, load the whole test set
@@ -223,8 +225,8 @@ def validate(valid_set, model, pool_size, K, sim_measure):
     model.eval()
     device = next(model.parameters()).device
 
-    data_loader = torch.utils.data.DataLoader(dataset=valid_set, batch_size=10000, 
-                                 shuffle=True, drop_last=True, num_workers=1)
+    # data_loader = torch.utils.data.DataLoader(dataset=valid_set, batch_size=10000, 
+    #                              shuffle=True, drop_last=True, num_workers=1)
     accs, mrrs, maps, ndcgs=[],[],[],[]
     code_reprs, desc_reprs = [], []
     n_processed = 0
