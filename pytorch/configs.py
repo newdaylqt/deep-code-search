@@ -26,7 +26,7 @@ def config_JointEmbeder():
             'api_len':30,
             'tokens_len':50,
             'desc_len': 30,
-            'n_words': 10000, # len(vocabulary) + 1
+            'n_words': 10001, # len(vocabulary) + 1
             #vocabulary info
             'vocab_name':'vocab.name.pkl',
             'vocab_api':'vocab.apiseq.pkl',

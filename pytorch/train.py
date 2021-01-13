@@ -74,9 +74,9 @@ def train(args):
                                   config['valid_tokens'], config['tokens_len'],
                                   config['valid_desc'], config['desc_len'])
     data_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=config['batch_size'], 
-                                       shuffle=True, drop_last=True, num_workers=1)
-    data_loader_valid = torch.utils.data.DataLoader(dataset=valid_set, batch_size=10000, 
-                                       shuffle=True, drop_last=True, num_workers=1)
+                                       shuffle=False, drop_last=True, num_workers=1)
+    data_loader_valid = torch.utils.data.DataLoader(dataset=valid_set, batch_size=64, 
+                                       shuffle=False, drop_last=True, num_workers=1)
 
     ###############################################################################
     # Define Model
@@ -164,7 +164,7 @@ def train(args):
 
             if itr_global % args.valid_every == 0:
                 logger.info("validating..")                  
-                valid_result = validate(data_loader_valid, model, 10000, 1, config['sim_measure'])  
+                valid_result = validate(data_loader_valid, model, 1000, 1, config['sim_measure'])  
                 logger.info(valid_result)
                 if tb_writer is not None:
                     for key, value in valid_result.items():
@@ -244,10 +244,15 @@ def validate(data_loader, model, pool_size, K, sim_measure):
         desc_reprs.append(desc_repr)
         n_processed += batch[0].size(0)
     code_reprs, desc_reprs = np.vstack(code_reprs), np.vstack(desc_reprs)
-     
+    code_reprs_len, desc_reprs_len = code_reprs.shape[0], desc_reprs.shape[0]
+
     for k in tqdm(range(0, n_processed, pool_size)):
-        code_pool, desc_pool = code_reprs[k:k+pool_size], desc_reprs[k:k+pool_size] 
-        for i in range(min(10000, pool_size)): # for i in range(pool_size):
+        code_pool, desc_pool = code_reprs[k:k+pool_size], desc_reprs[k:k+pool_size]
+        if k+pool_size > code_reprs_len:
+            code_pool = np.concatenate((code_pool, code_reprs[0:k+pool_size-code_reprs_len]))
+            desc_pool = np.concatenate((desc_pool, desc_reprs[0:k+pool_size-code_reprs_len]))
+
+        for i in range(pool_size): # for i in range(pool_size):
             desc_vec = np.expand_dims(desc_pool[i], axis=0) # [1 x dim]
             n_results = K    
             if sim_measure=='cos':
