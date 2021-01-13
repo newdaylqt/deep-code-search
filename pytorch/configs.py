@@ -28,10 +28,10 @@ def config_JointEmbeder():
             'desc_len': 30,
             'n_words': 10000, # len(vocabulary) + 1
             #vocabulary info
-            'vocab_name':'vocab.name.json',
-            'vocab_api':'vocab.apiseq.json',
-            'vocab_tokens':'vocab.tokens.json',
-            'vocab_desc':'vocab.desc.json',
+            'vocab_name':'vocab.name.pkl',
+            'vocab_api':'vocab.apiseq.pkl',
+            'vocab_tokens':'vocab.tokens.pkl',
+            'vocab_desc':'vocab.desc.pkl',
                     
         #training_params            
             'batch_size': 64,
